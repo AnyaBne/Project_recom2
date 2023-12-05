@@ -1,11 +1,10 @@
+
 import streamlit as st
 import pandas as pd
 from surprise import SVD, Dataset, Reader
 from surprise.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import matplotlib.pyplot as plt
-
 
 # Load your dataset
 df = pd.read_csv('song_dataset.csv')  # Replace with the path to your dataset
@@ -21,37 +20,6 @@ algo.fit(trainset)
 df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist_name'] + ' ' + df['year'].astype(str)
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
-
-def explain_collaborative_filtering(user_id, recommendations):
-    if recommendations is not None and not recommendations.empty:
-        st.write("Explication : Ces chansons vous sont recommandées car des utilisateurs avec des goûts similaires les ont appréciées.")
-        scores = [algo.predict(user_id, song['title']).est for song in recommendations.to_dict('records')]
-        plt.figure(figsize=(10, 4))
-        plt.bar(recommendations['title'], scores)
-        plt.xlabel('Chansons')
-        plt.ylabel('Score de Recommandation')
-        plt.title('Scores de Recommandation Collaborative')
-        st.pyplot(plt)
-    else:
-        st.write("Aucune donnée de recommandation disponible pour l'explication.")
-
-
-
-def explain_content_based_filtering(selected_songs, recommendations):
-    st.write("Explication : Ces chansons sont recommandées sur la base de votre sélection précédente et de leurs similitudes avec celle-ci.")
-    
-    # Calcul des scores de similarité pour les recommandations
-    selected_song_vectors = tfidf_vectorizer.transform(selected_songs)
-    cosine_similarities = cosine_similarity(selected_song_vectors, tfidf_matrix)
-    
-    # Visualisation des scores de similarité
-    plt.figure(figsize=(10, 4))
-    for idx, song in enumerate(recommendations['title']):
-        plt.bar(song, cosine_similarities[0][idx])
-    plt.xlabel('Chansons')
-    plt.ylabel('Score de Similarité')
-    plt.title('Scores de Similarité pour la Recommandation Basée sur le Contenu')
-    st.pyplot(plt)
 
 # Streamlit app
 def main():
@@ -70,8 +38,6 @@ def main():
         initial_recommendations_container.subheader("Initial Recommendations")
         initial_recommendations_container.write(initial_recommendations)
 
-        explain_collaborative_filtering(user_id, initial_recommendations)
-
         # Placeholder for refined recommendations
         refined_container = st.empty()
 
@@ -87,7 +53,6 @@ def main():
             final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
             final_recommendations_container.subheader("Final Recommendations")
             final_recommendations_container.write(final_recommendations)
-            explain_content_based_filtering(selected_songs, final_recommendations)
         else:
             st.warning("Please select at least one song to refine recommendations.")
 
