@@ -116,7 +116,9 @@ def explain_recommendations(user_id, recommendations, title, explanation):
     st.subheader(title)
     st.write(explanation)
     st.write(recommendations)
-    scores = [algo.predict(user_id, song).est for song in recommendations['song']]
+
+    # Utilisation de la colonne 'title' pour obtenir les scores de recommandation
+    scores = [algo.predict(user_id, song['song']).est for song in recommendations.to_dict('records')]
     plt.figure(figsize=(10, 4))
     plt.bar(recommendations['title'], scores)
     plt.xlabel('Chansons')
