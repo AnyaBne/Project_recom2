@@ -62,6 +62,34 @@ def main():
         st.text("Why these songs are recommended:")
         st.info(explanations)
 
+        explanations, viz_data = generate_explanations(initial_recommendations, user_id)
+    
+        # Afficher les explications textuelles
+        st.info(explanations)
+
+        # Création et affichage du graphique
+        fig, ax1 = plt.subplots()
+    
+        # Création du graphique à barres pour les scores
+        ax1.bar(viz_data['Title'], viz_data['Score'], color='b', label='Prediction Score')
+        ax1.set_xlabel('Song Titles')
+        ax1.set_ylabel('Prediction Score', color='b')
+        ax1.tick_params('y', colors='b')
+    
+        # Ajout d'un second axe pour le nombre d'utilisateurs similaires
+        ax2 = ax1.twinx()
+        ax2.plot(viz_data['Title'], viz_data['Similar Users'], color='r', label='Similar Users')
+        ax2.set_ylabel('Number of Similar Users', color='r')
+        ax2.tick_params('y', colors='r')
+
+        # Ajout de légendes et ajustement de la mise en page
+        fig.tight_layout()
+        plt.xticks(rotation=45)
+        st.pyplot(fig)
+
+
+        
+
         # Placeholder for refined recommendations
         refined_container = st.empty()
 
