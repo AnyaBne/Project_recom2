@@ -4,6 +4,8 @@ from surprise import SVD, Dataset, Reader
 from surprise.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import matplotlib.pyplot as plt
+
 
 # Load your dataset
 df = pd.read_csv('song_dataset.csv')  # Replace with the path to your dataset
