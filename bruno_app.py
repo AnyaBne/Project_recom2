@@ -21,17 +21,14 @@ df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 
-def explain_individual_recommendation_collaborative(user_id, song):
-    # Obtenez les utilisateurs qui ont également aimé cette chanson
-    users_who_liked_song = df[df['song'] == song]['user'].unique()
-    # Vérifiez si l'utilisateur actuel a des goûts similaires avec ces utilisateurs
-    similar_users = [user for user in users_who_liked_song if user != user_id]  # Exclure l'utilisateur actuel
-    # Expliquer la recommandation
-    if similar_users:
-        explanation = f"Cette chanson est recommandée car {len(similar_users)} utilisateurs ayant des goûts similaires l'apprécient."
-    else:
-        explanation = "Cette chanson est une nouvelle tendance parmi les utilisateurs ayant des goûts variés."
-    return explanation
+def explain_collaborative_filtering(recommendations, user_id, df, algo):
+    explanations = []
+    for _, row in recommendations.iterrows():
+        song = row['song']
+        # Obtenez les estimations de la prédiction pour cette chanson
+        prediction = algo.predict(user_id, song)
+        explanations.append(f"La chanson '{row['title']}' par '{row['artist_name']}' a un score de recommandation de {prediction.est:.2f}, ce qui indique une forte affinité basée sur les préférences des utilisateurs avec des goûts similaires.")
+    return explanations
     
 def explain_individual_recommendation_content(user_id, selected_songs, song):
     # Récupérer les attributs de la chanson recommandée
@@ -63,9 +60,9 @@ def main():
         initial_recommendations = get_initial_recommendations(user_id)
         initial_recommendations_container.subheader("Initial Recommendations")
         initial_recommendations_container.write(initial_recommendations)
-        for song in initial_recommendations['title'].tolist():
-            explanation = explain_individual_recommendation_collaborative(user_id, song)
-            st.write(f"**{song}**: {explanation}")
+        explanations = explain_collaborative_filtering(initial_recommendations, user_id, df, algo)
+        for explanation in explanations:
+           st.write(explanation)
 
         # Placeholder for refined recommendations
         refined_container = st.empty()
