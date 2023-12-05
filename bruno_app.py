@@ -20,7 +20,7 @@ df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 def generate_explanations(recommended_songs, user_id):
-    explanations = ["Detailed explanations for your recommendations:\n"]
+    explanations = ["Detailed explanations for your recommendations:\n The songs are recommended based on listening preferences of users with similar tastes as yours. \n"]
     for index, row in recommended_songs.iterrows():
         # Utiliser 'title' comme identifiant de la chanson si 'song' n'est pas disponible
         song_id = row.get('song', row['title'])
@@ -66,26 +66,6 @@ def main():
     
         # Afficher les explications textuelles
         st.info(explanations)
-
-        # Création et affichage du graphique
-        fig, ax1 = plt.subplots()
-    
-        # Création du graphique à barres pour les scores
-        ax1.bar(viz_data['Title'], viz_data['Score'], color='b', label='Prediction Score')
-        ax1.set_xlabel('Song Titles')
-        ax1.set_ylabel('Prediction Score', color='b')
-        ax1.tick_params('y', colors='b')
-    
-        # Ajout d'un second axe pour le nombre d'utilisateurs similaires
-        ax2 = ax1.twinx()
-        ax2.plot(viz_data['Title'], viz_data['Similar Users'], color='r', label='Similar Users')
-        ax2.set_ylabel('Number of Similar Users', color='r')
-        ax2.tick_params('y', colors='r')
-
-        # Ajout de légendes et ajustement de la mise en page
-        fig.tight_layout()
-        plt.xticks(rotation=45)
-        st.pyplot(fig)
 
 
         
