@@ -26,14 +26,23 @@ def explain_collaborative_filtering(user_id, recommendations):
     if recommendations is not None and not recommendations.empty:
         st.write("Explication : Ces chansons vous sont recommandées car des utilisateurs avec des goûts similaires les ont appréciées.")
         scores = [algo.predict(user_id, song['title']).est for song in recommendations.to_dict('records')]
-        plt.figure(figsize=(20, 8))  # Ajustez la taille pour plus de clarté
-        bars = plt.bar(recommendations['title'], scores)
+        plt.figure(figsize=(20, 10))  # Ajustez la taille pour plus de clarté
+        
+        # Augmenter l'espacement entre les barres si nécessaire
+        bar_width = 0.35  # Vous pouvez expérimenter avec cette valeur
+        
+        bars = plt.bar(recommendations['title'], scores, width=bar_width)
         plt.xlabel('Chansons')
         plt.ylabel('Score de Recommandation')
         plt.title('Scores de Recommandation Collaborative')
         
         # Rotation des étiquettes sur l'axe des x
-        plt.xticks(rotation=45, ha='right')  # Rotation de 45 degrés pour une meilleure visibilité
+        plt.xticks(rotation=90, ha='center')  # Rotation de 90 degrés pour les mettre verticalement
+        
+        # Afficher les étiquettes sur plusieurs lignes si nécessaire
+        labels = [label.get_text() for label in bars]
+        labels = ['\n'.join(wrap(label, 20)) for label in labels]  # Limiter à 20 caractères par ligne
+        plt.gca().set_xticklabels(labels)
         
         # Ajustement automatique des étiquettes pour éviter le chevauchement
         plt.tight_layout()
@@ -41,6 +50,7 @@ def explain_collaborative_filtering(user_id, recommendations):
         st.pyplot(plt)
     else:
         st.write("Aucune donnée de recommandation disponible pour l'explication.")
+
 
 
 
