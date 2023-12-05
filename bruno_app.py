@@ -21,26 +21,27 @@ tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 def generate_explanations(recommended_songs, user_id):
     explanations = ["Detailed explanations for your recommendations:\n"]
-    user_listened_songs = df[df['user'] == user_id]['song'].unique()
-
     for index, row in recommended_songs.iterrows():
-        song = row['title']
+        # Utiliser 'title' comme identifiant de la chanson si 'song' n'est pas disponible
+        song_id = row.get('song', row['title'])
         artist = row['artist_name']
-        score = algo.predict(user_id, row['song']).est  # Get the prediction score for the song
-        
-        # Find the number of similar users who liked this song
-        similar_users = find_similar_users(user_id)
-        similar_users_who_liked_song = df[(df['user'].isin(similar_users)) & (df['song'] == row['song'])]['user'].nunique()
+        score = algo.predict(user_id, song_id).est  # Get the prediction score for the song
 
-        explanation = f"'{song}' by {artist} is recommended with a score of {score:.2f}. " \
+        # Trouver le nombre d'utilisateurs similaires qui ont aimé cette chanson
+        similar_users = find_similar_users(user_id)
+        similar_users_who_liked_song = df[(df['user'].isin(similar_users)) & (df['song'] == song_id)]['user'].nunique()
+
+        explanation = f"'{row['title']}' by {artist} is recommended with a score of {score:.2f}. " \
                        f"It is liked by {similar_users_who_liked_song} users with similar tastes as yours."
         explanations.append(explanation)
     return '\n'.join(explanations)
 
 def find_similar_users(user_id):
-    # Implement logic to find users with similar preferences
-    # This is a placeholder for your actual logic to find similar users
-    return df[df['song'].isin(user_listened_songs)]['user'].unique()
+    # Implémenter la logique pour trouver des utilisateurs aux préférences similaires
+    # Ceci est un emplacement pour votre logique réelle pour trouver des utilisateurs similaires
+    listened_songs = df[df['user'] == user_id]['song'].unique()
+    return df[df['song'].isin(listened_songs)]['user'].unique()
+
 # Streamlit app
 def main():
     st.title("Song Recommendation System")
