@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 from surprise import SVD, Dataset, Reader
@@ -20,47 +19,6 @@ algo.fit(trainset)
 df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist_name'] + ' ' + df['year'].astype(str)
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
-
-# Streamlit app
-def main():
-    st.title("Song Recommendation System")
-
-    # Step 1: User Login
-    user_id = st.text_input("Enter your user ID:")
-    login_container = st.empty()
-
-    if user_id:
-        login_container.empty()  # Clear the login section
-
-        # Step 2: Generate Initial Recommendations
-        initial_recommendations_container = st.empty()
-        initial_recommendations = get_initial_recommendations(user_id)
-        initial_recommendations_container.subheader("Initial Recommendations")
-        initial_recommendations_container.write(initial_recommendations)
-
-        # Placeholder for refined recommendations
-        refined_container = st.empty()
-
-        # Step 3: User Refines Recommendations
-        selected_songs = st.multiselect("Select songs to refine recommendations:", df['title'].unique())
-
-        if selected_songs:
-            # Step 4: Generate Refined Recommendations
-            refined_recommendations = generate_content_based_recommendations(selected_songs, user_id, n=10)
-
-            # Step 5: Final Output
-            final_recommendations_container = st.empty()
-            final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
-            final_recommendations_container.subheader("Final Recommendations")
-            final_recommendations_container.write(final_recommendations)
-        else:
-            st.warning("Please select at least one song to refine recommendations.")
-
-
-    # Step 5: Final Output
-    #final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
-    #st.subheader("Final Recommendations")
-    #st.write(final_recommendations)
 
 # Helper functions
 def get_initial_recommendations(user_id, n=10):
@@ -120,8 +78,6 @@ def generate_content_based_recommendations(selected_songs, user_id, n=10):
 
 def get_final_recommendations(user_id, initial_recommendations, refined_recommendations, initial_weight=0.3, refined_weight=0.7, n=10):
     # Implement logic to combine and filter recommendations
-    # Return the final list of recommendations
-    # For example, you can remove duplicates and filter songs the user has already listened to
     listened_songs = df[df['user'] == user_id]['title'].unique()
 
     # Convert refined_recommendations to a DataFrame
@@ -152,6 +108,67 @@ def get_final_recommendations(user_id, initial_recommendations, refined_recommen
 
     return final_recommendations
 
+# Explanation functions
+def explain_collaborative_recommendation(user_id, song_id):
+    # Get the prediction score for the recommended song
+    prediction = algo.predict(user_id, song_id).est
+    return f"Cette chanson vous est recommandée avec un score de confiance de {prediction:.2f}, basé sur vos écoutes précédentes et celles des utilisateurs ayant des goûts similaires."
+
+def explain_content_based_recommendation(selected_song, recommended_song):
+    # Transform the attributes into TF-IDF vectors
+    selected_song_vector = tfidf_vectorizer.transform([df[df['title'] == selected_song]['combined_attributes'].iloc[0]])
+    recommended_song_vector = tfidf_vectorizer.transform([df[df['title'] == recommended_song]['combined_attributes'].iloc[0]])
+
+    # Calculate the cosine similarity
+    similarity = cosine_similarity(selected_song_vector, recommended_song_vector)[0][0]
+    return f"Cette chanson vous est recommandée car elle a une similarité de {similarity:.2f} avec '{selected_song}', une chanson que vous avez sélectionnée."
+
+# Streamlit app
+def main():
+    st.title("Song Recommendation System")
+
+    # Step 1: User Login
+    user_id = st.text_input("Enter your user ID:")
+    login_container = st.empty()
+
+    if user_id:
+        login_container.empty()  # Clear the login section
+
+        # Step 2: Generate Initial Recommendations
+        initial_recommendations_container = st.empty()
+        initial_recommendations = get_initial_recommendations(user_id)
+        initial_recommendations_container.subheader("Initial Recommendations")
+        initial_recommendations_container.write(initial_recommendations)
+
+        # Explaining initial recommendations
+        if st.button('Explain Initial Recommendations'):
+            for index, row in initial_recommendations.iterrows():
+                explanation = explain_collaborative_recommendation(user_id, row['song'])
+                st.write(f"For '{row['title']}': {explanation}")
+
+        # Placeholder for refined recommendations
+        refined_container = st.empty()
+
+        # Step 3: User Refines Recommendations
+        selected_songs = st.multiselect("Select songs to refine recommendations:", df['title'].unique())
+
+        if selected_songs:
+            # Step 4: Generate Refined Recommendations
+            refined_recommendations = generate_content_based_recommendations(selected_songs, user_id, n=10)
+
+            # Explaining refined recommendations
+            if st.button('Explain Refined Recommendations'):
+                for song in refined_recommendations:
+                    explanation = explain_content_based_recommendation(selected_songs[0], song['title'])
+                    st.write(f"For '{song['title']}': {explanation}")
+
+            # Step 5: Final Output
+            final_recommendations_container = st.empty()
+            final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
+            final_recommendations_container.subheader("Final Recommendations")
+            final_recommendations_container.write(final_recommendations)
+        else:
+            st.warning("Please select at least one song to refine recommendations.")
 
 if __name__ == "__main__":
     main()
