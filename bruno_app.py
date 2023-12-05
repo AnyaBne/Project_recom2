@@ -42,6 +42,25 @@ def find_similar_users(user_id):
     listened_songs = df[df['user'] == user_id]['song'].unique()
     return df[df['song'].isin(listened_songs)]['user'].unique()
 
+def explain_content_based_selection(selected_songs, recommended_songs, tfidf_vectorizer):
+    explanations = []
+    
+    for song in selected_songs:
+        selected_song_attributes = df[df['title'] == song]['combined_attributes'].iloc[0]
+        explanation = f"Selected song '{song}' has these key attributes: {selected_song_attributes}."
+        explanations.append(explanation)
+
+    explanations.append("\nBased on these attributes, the following songs are recommended:")
+
+    for rec_song in recommended_songs:
+        rec_song_title = rec_song['title']
+        rec_song_attributes = df[df['title'] == rec_song_title]['combined_attributes'].iloc[0]
+        explanation = f"Recommended song '{rec_song_title}' has similar attributes: {rec_song_attributes}."
+        explanations.append(explanation)
+
+    return explanations
+
+
 # Streamlit app
 def main():
     st.title("Song Recommendation System")
@@ -85,6 +104,12 @@ def main():
             final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
             final_recommendations_container.subheader("Final Recommendations")
             final_recommendations_container.write(final_recommendations)
+
+            # Appeler la fonction d'explication et afficher les explications
+            explanations = explain_content_based_selection(selected_songs, final_recommendations, tfidf_vectorizer)
+            st.subheader("Explanation for Recommendations:")
+            for explanation in explanations:
+                st.info(explanation)
         else:
             st.warning("Please select at least one song to refine recommendations.")
 
