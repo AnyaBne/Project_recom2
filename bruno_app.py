@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 from surprise import SVD, Dataset, Reader
@@ -23,13 +22,14 @@ tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 
 def explain_collaborative_filtering(user_id, recommendations):
     st.write("Explication : Ces chansons vous sont recommandées car des utilisateurs avec des goûts similaires les ont appréciées.")
-    scores = [algo.predict(user_id, song['song']).est for song in recommendations.to_dict('records')]
+    scores = [algo.predict(user_id, song['title']).est for song in recommendations.to_dict('records')]
     plt.figure(figsize=(10, 4))
     plt.bar(recommendations['title'], scores)
     plt.xlabel('Chansons')
     plt.ylabel('Score de Recommandation')
     plt.title('Scores de Recommandation Collaborative')
     st.pyplot(plt)
+
 
 def explain_content_based_filtering(selected_songs, recommendations):
     st.write("Explication : Ces chansons sont recommandées sur la base de votre sélection précédente et de leurs similitudes avec celle-ci.")
