@@ -100,6 +100,8 @@ def main():
             final_recommendations_container.subheader("Final Recommendations")
             final_recommendations_container.write(final_recommendations)
 
+            final_recommendations_df = pd.DataFrame(final_recommendations)
+
             # Appeler la fonction d'explication
             explanations = explain_content_based_selection(selected_songs, final_recommendations_df, tfidf_vectorizer)
 
