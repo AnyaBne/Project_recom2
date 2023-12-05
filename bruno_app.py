@@ -33,7 +33,7 @@ def get_initial_recommendations(user_id, n=10):
     predictions.sort(key=lambda x: x[1], reverse=True)
     
     recommended_song_ids = [song for song, _ in predictions[:n]]
-    recommended_songs = df[df['song'].isin(recommended_song_ids)][['title', 'artist_name']].drop_duplicates().head(n)
+    recommended_songs = df[df['song'].isin(recommended_song_ids)][['song', 'title', 'artist_name']].drop_duplicates().head(n)
     
     return recommended_songs
 
@@ -50,7 +50,7 @@ def generate_content_based_recommendations(selected_songs, user_id, n=10):
         selected_song_attributes = df[df['title'] == selected_song]['combined_attributes'].iloc[0]
         selected_song_vectors.append(tfidf_vectorizer.transform([selected_song_attributes]))
 
-    # Aggregate TF-IDF vectors (you may choose a different strategy based on your requirements)
+    # Aggregate TF-IDF vectors
     selected_songs_vector = sum(selected_song_vectors)
 
     # Calculate cosine similarities between the selected songs and all songs
@@ -110,16 +110,13 @@ def get_final_recommendations(user_id, initial_recommendations, refined_recommen
 
 # Explanation functions
 def explain_collaborative_recommendation(user_id, song_id):
-    # Get the prediction score for the recommended song
     prediction = algo.predict(user_id, song_id).est
     return f"Cette chanson vous est recommandée avec un score de confiance de {prediction:.2f}, basé sur vos écoutes précédentes et celles des utilisateurs ayant des goûts similaires."
 
 def explain_content_based_recommendation(selected_song, recommended_song):
-    # Transform the attributes into TF-IDF vectors
     selected_song_vector = tfidf_vectorizer.transform([df[df['title'] == selected_song]['combined_attributes'].iloc[0]])
     recommended_song_vector = tfidf_vectorizer.transform([df[df['title'] == recommended_song]['combined_attributes'].iloc[0]])
 
-    # Calculate the cosine similarity
     similarity = cosine_similarity(selected_song_vector, recommended_song_vector)[0][0]
     return f"Cette chanson vous est recommandée car elle a une similarité de {similarity:.2f} avec '{selected_song}', une chanson que vous avez sélectionnée."
 
