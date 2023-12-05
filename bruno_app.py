@@ -20,30 +20,28 @@ algo.fit(trainset)
 df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist_name'] + ' ' + df['year'].astype(str)
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
+def generate_explanations(recommended_songs, user_id):
+    explanations = ["Detailed explanations for your recommendations:\n"]
+    user_listened_songs = df[df['user'] == user_id]['song'].unique()
 
-def explain_collaborative_filtering(recommendations, user_id, df, algo):
-    explanations = []
-    for _, row in recommendations.iterrows():
-        song = row['song']
-        # Obtenez les estimations de la prédiction pour cette chanson
-        prediction = algo.predict(user_id, song)
-        explanations.append(f"La chanson '{row['title']}' par '{row['artist_name']}' a un score de recommandation de {prediction.est:.2f}, ce qui indique une forte affinité basée sur les préférences des utilisateurs avec des goûts similaires.")
-    return explanations
-    
-def explain_individual_recommendation_content(user_id, selected_songs, song):
-    # Récupérer les attributs de la chanson recommandée
-    song_attributes = df[df['title'] == song]['combined_attributes'].iloc[0]
-    # Calculer la similarité avec les chansons sélectionnées
-    song_vector = tfidf_vectorizer.transform([song_attributes])
-    selected_song_vectors = tfidf_vectorizer.transform(selected_songs)
-    similarity = cosine_similarity(song_vector, selected_song_vectors).flatten()
-    # Prendre la similarité la plus élevée
-    max_similarity = max(similarity)
-    # Expliquer la recommandation
-    explanation = f"Cette chanson a été recommandée en raison de sa forte similarité avec les chansons que vous avez sélectionnées, avec un score de similarité de {max_similarity:.2f}."
-    return explanation
+    for index, row in recommended_songs.iterrows():
+        song = row['title']
+        artist = row['artist_name']
+        score = algo.predict(user_id, row['song']).est  # Get the prediction score for the song
+        
+        # Find the number of similar users who liked this song
+        similar_users = find_similar_users(user_id)
+        similar_users_who_liked_song = df[(df['user'].isin(similar_users)) & (df['song'] == row['song'])]['user'].nunique()
 
+        explanation = f"'{song}' by {artist} is recommended with a score of {score:.2f}. " \
+                       f"It is liked by {similar_users_who_liked_song} users with similar tastes as yours."
+        explanations.append(explanation)
+    return '\n'.join(explanations)
 
+def find_similar_users(user_id):
+    # Implement logic to find users with similar preferences
+    # This is a placeholder for your actual logic to find similar users
+    return df[df['song'].isin(user_listened_songs)]['user'].unique()
 # Streamlit app
 def main():
     st.title("Song Recommendation System")
@@ -60,9 +58,9 @@ def main():
         initial_recommendations = get_initial_recommendations(user_id)
         initial_recommendations_container.subheader("Initial Recommendations")
         initial_recommendations_container.write(initial_recommendations)
-        explanations = explain_collaborative_filtering(initial_recommendations, user_id, df, algo)
-        for explanation in explanations:
-           st.write(explanation)
+        explanations = generate_explanations(initial_recommendations, user_id)
+        st.text("Why these songs are recommended:")
+        st.info(explanations)
 
         # Placeholder for refined recommendations
         refined_container = st.empty()
@@ -79,9 +77,6 @@ def main():
             final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
             final_recommendations_container.subheader("Final Recommendations")
             final_recommendations_container.write(final_recommendations)
-            for song in final_recommendations['title']:
-              explanation = explain_individual_recommendation_content(user_id, selected_songs, song)
-              st.write(f"**{song}**: {explanation}")
         else:
             st.warning("Please select at least one song to refine recommendations.")
 
