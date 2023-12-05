@@ -81,13 +81,7 @@ def main():
         st.text("Why these songs are recommended:")
         st.info(explanations)
 
-        explanations, viz_data = generate_explanations(initial_recommendations, user_id)
-    
-        # Afficher les explications textuelles
-        st.info(explanations)
 
-
-        
 
         # Placeholder for refined recommendations
         refined_container = st.empty()
