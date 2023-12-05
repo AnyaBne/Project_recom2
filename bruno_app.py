@@ -44,7 +44,8 @@ def find_similar_users(user_id):
 
 def explain_content_based_selection(selected_songs, recommended_songs_df, tfidf_vectorizer):
     explanations = []
-    df['combined_attributes2'] = 'title: '+ df['title'] + ' ' + 'release: '+ df['release'] + ' ' + 'artist name: ' + df['artist_name'] + ' ' + 'year: ' df['year'].astype(str)
+    df['combined_attributes2'] = 'title: ' + df['title'] + ' ' + 'release: ' + df['release'] + ' ' + 'artist name: ' + df['artist_name'] + ' ' + 'year: ' + df['year'].astype(str)
+
     for song in selected_songs:
         selected_song_attributes = df[df['title'] == song]['combined_attributes2'].iloc[0]
         explanation = f"Selected song '{song}' has these key attributes: {selected_song_attributes}."
