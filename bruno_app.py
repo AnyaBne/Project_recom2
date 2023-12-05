@@ -1,27 +1,97 @@
+
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 from surprise import SVD, Dataset, Reader
 from surprise.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Importez votre dataset
-df = pd.read_csv('song_dataset.csv')  # Remplacez par le chemin de votre dataset
+# Load your dataset
+df = pd.read_csv('song_dataset.csv')  # Replace with the path to your dataset
 
-# Configuration pour le filtrage collaboratif
+# Configuration for collaborative filtering
 reader = Reader(rating_scale=(df['play_count'].min(), df['play_count'].max()))
 data = Dataset.load_from_df(df[['user', 'song', 'play_count']], reader)
 algo = SVD()
 trainset, _ = train_test_split(data, test_size=0.25)
 algo.fit(trainset)
 
-# Configuration pour le filtrage basé sur le contenu
+# Configuration for content-based filtering
 df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist_name'] + ' ' + df['year'].astype(str)
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 
-# Fonctions d'aide pour les recommandations
+def explain_collaborative_filtering(user_id, recommendations):
+    st.write("Explication : Ces chansons vous sont recommandées car des utilisateurs avec des goûts similaires les ont appréciées.")
+    scores = [algo.predict(user_id, song['song']).est for song in recommendations.to_dict('records')]
+    plt.figure(figsize=(10, 4))
+    plt.bar(recommendations['title'], scores)
+    plt.xlabel('Chansons')
+    plt.ylabel('Score de Recommandation')
+    plt.title('Scores de Recommandation Collaborative')
+    st.pyplot(plt)
+
+def explain_content_based_filtering(selected_songs, recommendations):
+    st.write("Explication : Ces chansons sont recommandées sur la base de votre sélection précédente et de leurs similitudes avec celle-ci.")
+    
+    # Calcul des scores de similarité pour les recommandations
+    selected_song_vectors = tfidf_vectorizer.transform(selected_songs)
+    cosine_similarities = cosine_similarity(selected_song_vectors, tfidf_matrix)
+    
+    # Visualisation des scores de similarité
+    plt.figure(figsize=(10, 4))
+    for idx, song in enumerate(recommendations['title']):
+        plt.bar(song, cosine_similarities[0][idx])
+    plt.xlabel('Chansons')
+    plt.ylabel('Score de Similarité')
+    plt.title('Scores de Similarité pour la Recommandation Basée sur le Contenu')
+    st.pyplot(plt)
+
+# Streamlit app
+def main():
+    st.title("Song Recommendation System")
+
+    # Step 1: User Login
+    user_id = st.text_input("Enter your user ID:")
+    login_container = st.empty()
+
+    if user_id:
+        login_container.empty()  # Clear the login section
+
+        # Step 2: Generate Initial Recommendations
+        initial_recommendations_container = st.empty()
+        initial_recommendations = get_initial_recommendations(user_id)
+        initial_recommendations_container.subheader("Initial Recommendations")
+        initial_recommendations_container.write(initial_recommendations)
+
+        explain_collaborative_filtering(user_id, initial_recommendations)
+
+        # Placeholder for refined recommendations
+        refined_container = st.empty()
+
+        # Step 3: User Refines Recommendations
+        selected_songs = st.multiselect("Select songs to refine recommendations:", df['title'].unique())
+
+        if selected_songs:
+            # Step 4: Generate Refined Recommendations
+            refined_recommendations = generate_content_based_recommendations(selected_songs, user_id, n=10)
+
+            # Step 5: Final Output
+            final_recommendations_container = st.empty()
+            final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
+            final_recommendations_container.subheader("Final Recommendations")
+            final_recommendations_container.write(final_recommendations)
+            explain_content_based_filtering(selected_songs, final_recommendations)
+        else:
+            st.warning("Please select at least one song to refine recommendations.")
+
+
+    # Step 5: Final Output
+    #final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
+    #st.subheader("Final Recommendations")
+    #st.write(final_recommendations)
+
+# Helper functions
 def get_initial_recommendations(user_id, n=10):
     # Collaborative filtering logic
     listened_songs = df[df['user'] == user_id]['song'].unique()
@@ -111,36 +181,6 @@ def get_final_recommendations(user_id, initial_recommendations, refined_recommen
 
     return final_recommendations
 
-# Fonctions pour les explications et visualisations
-def explain_recommendations(user_id, recommendations, title, explanation):
-    st.subheader(title)
-    st.write(explanation)
-    st.write(recommendations)
-
-    # Utilisation de la colonne 'title' pour obtenir les scores de recommandation
-    scores = [algo.predict(user_id, song['song']).est for song in recommendations.to_dict('records')]
-    plt.figure(figsize=(10, 4))
-    plt.bar(recommendations['title'], scores)
-    plt.xlabel('Chansons')
-    plt.ylabel('Score de Recommandation')
-    st.pyplot(plt)
-
-# Application Streamlit
-def main():
-    st.title("Système de Recommandation de Chansons")
-
-    user_id = st.text_input("Entrez votre identifiant utilisateur:")
-    if user_id:
-        # Générer les recommandations initiales
-        initial_recommendations = get_initial_recommendations(user_id)
-        explain_recommendations(user_id, initial_recommendations, "Recommandations Initiales", "Ces chansons vous sont recommandées car des utilisateurs avec des goûts similaires les ont appréciées.")
-
-        selected_songs = st.multiselect("Sélectionnez des chansons pour affiner les recommandations:", df['title'].unique())
-        if selected_songs:
-            refined_recommendations = generate_content_based_recommendations(selected_songs, user_id, n=10)
-            final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
-            explain_recommendations(user_id, final_recommendations, "Recommandations Finales", "Ces chansons sont recommandées en fonction de vos sélections précédentes et de leurs similitudes.")
 
 if __name__ == "__main__":
     main()
-
