@@ -23,14 +23,18 @@ tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 
 def explain_collaborative_filtering(user_id, recommendations):
-    st.write("Explication : Ces chansons vous sont recommandées car des utilisateurs avec des goûts similaires les ont appréciées.")
-    scores = [algo.predict(user_id, song['title']).est for song in recommendations.to_dict('records')]
-    plt.figure(figsize=(10, 4))
-    plt.bar(recommendations['title'], scores)
-    plt.xlabel('Chansons')
-    plt.ylabel('Score de Recommandation')
-    plt.title('Scores de Recommandation Collaborative')
-    st.pyplot(plt)
+    if recommendations is not None and not recommendations.empty:
+        st.write("Explication : Ces chansons vous sont recommandées car des utilisateurs avec des goûts similaires les ont appréciées.")
+        scores = [algo.predict(user_id, song['title']).est for song in recommendations.to_dict('records')]
+        plt.figure(figsize=(10, 4))
+        plt.bar(recommendations['title'], scores)
+        plt.xlabel('Chansons')
+        plt.ylabel('Score de Recommandation')
+        plt.title('Scores de Recommandation Collaborative')
+        st.pyplot(plt)
+    else:
+        st.write("Aucune donnée de recommandation disponible pour l'explication.")
+
 
 
 def explain_content_based_filtering(selected_songs, recommendations):
