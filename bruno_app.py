@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import requests
 from PIL import Image
 from io import BytesIO
+import matplotlib.pyplot as plt
 
 # Set Streamlit page configuration to wide mode
 st.set_page_config(layout="wide")
