@@ -164,13 +164,12 @@ def show_recommendations(state):
 
        
         plt.figure(figsize=(10, 6))
-        plt.bar(titles, score, color='skyblue')  # Utilisation des listes titles et scores
-        plt.xlabel('Chansons')
+        plt.bar(titles, scores, color='skyblue') 
+        plt.xlabel('Songs')
         plt.ylabel('Scores de Prédiction')
-        plt.title('Histogramme des Scores de Prédiction')
+        plt.title('Histogram')
         plt.xticks(rotation=45, ha='right')
-        plt.tight_layout()
-        plt.ylim(0, 10)  
+        plt.tight_layout()  
         st.pyplot(plt)
     
         
