@@ -43,21 +43,24 @@ tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 
 # Explain function of the refine recommendation
-def generate_explanation(song_title, tfidf_vectorizer, tfidf_matrix):
-    # Extraction des attributs TF-IDF pour la chanson sélectionnée
-    selected_song_index = df[df['title'] == song_title].index[0]
-    selected_song_tfidf = tfidf_matrix[selected_song_index]
+def explain_content_based_selection(selected_songs, recommended_songs_df, df):
+    explanations = []
 
-    # Obtention des mots-clés en fonction de leur score TF-IDF
-    feature_array = np.array(tfidf_vectorizer.get_feature_names_out())
-    tfidf_sorting = np.argsort(selected_song_tfidf.toarray()).flatten()[::-1]
+    for song in selected_songs:
+        selected_song_attributes = df[df['title'] == song]['combined_attributes2'].iloc[0]
+        explanation = f"Selected song '{song}' has these key attributes: {selected_song_attributes}."
+        explanations.append(explanation)
 
-    # Prendre les 5 meilleurs attributs
-    top_keywords = feature_array[tfidf_sorting][:5]
+    explanations.append("\nBased on these attributes, the following songs are recommended:")
 
-    # Générer une explication textuelle
-    explanation = f"Cette chanson est recommandée en raison de ses caractéristiques distinctives telles que {', '.join(top_keywords[:-1])}, et {top_keywords[-1]}."
-    return explanation
+    for idx, rec_song in recommended_songs_df.iterrows():
+        rec_song_title = rec_song['title']
+        rec_song_attributes = df[df['title'] == rec_song_title]['combined_attributes2'].iloc[0]
+        explanation = f"Recommended song '{rec_song_title}' has similar attributes: {rec_song_attributes}."
+        explanations.append(explanation)
+
+    return explanations
+
 
 
 # Streamlit app
@@ -147,13 +150,6 @@ def show_recommendations(state):
         # Step 4: Generate Refined Recommendations
         refined_recommendations = generate_content_based_recommendations(selected_songs, user_id, n=10)
 
-        # generate explication for each recommendation
-        explanations = {}
-        for song in refined_recommendations:
-          song_title = song['title']
-          explanation = generate_explanation(song_title, tfidf_vectorizer, tfidf_matrix)
-          explanations[song_title] = explanation
-
         # Display final recommendations outside the "About" section
         st.subheader("Final Recommendations")
         columns = st.columns(len(refined_recommendations))
@@ -200,10 +196,12 @@ def show_recommendations(state):
         st.pyplot(plt)
 
         if selected_songs:
-            st.subheader("Explications des Recommandations")
-            for title, explanation in explanations.items():
-               st.write(f"Titre: {title}")
-               st.text(explanation)
+            explanations = explain_content_based_selection(selected_songs, refined_recommendations, tfidf_vectorizer)
+
+            # display recommendation
+            st.subheader("Explanation for refine recommendations:")
+            for explanation in explanations:
+               st.info(explanation))
             
     
         
