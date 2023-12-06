@@ -201,7 +201,7 @@ def show_recommendations(state):
             # display recommendation
             st.subheader("Explanation for refine recommendations:")
             for explanation in explanations:
-               st.info(explanation))
+               st.info(explanation)
             
     
         
