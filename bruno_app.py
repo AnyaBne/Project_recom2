@@ -42,26 +42,6 @@ df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 
-# Explain function of the refine recommendation
-def explain_content_based_selection(selected_songs, recommended_songs_df, tfidf_vectorizer):
-    explanations = []
-    df['combined_attributes2'] = 'title: ' + df['title'] + ' ' + 'release: ' + df['release'] + ' ' + 'artist name: ' + df['artist_name'] + ' ' + 'year: ' + df['year'].astype(str)
-
-    for song in selected_songs:
-        selected_song_attributes = df[df['title'] == song]['combined_attributes2'].iloc[0]
-        explanation = f"Selected song '{song}' has these key attributes: {selected_song_attributes}."
-        explanations.append(explanation)
-
-    explanations.append("\nBased on these attributes, the following songs are recommended:")
-
-    for idx, rec_song in recommended_songs_df.iterrows():
-        rec_song_title = rec_song['title']
-        rec_song_attributes = df[df['title'] == rec_song_title]['combined_attributes'].iloc[0]
-        explanation = f"Recommended song '{rec_song_title}' has similar attributes: {rec_song_attributes}."
-        explanations.append(explanation)
-
-    return explanations
-
 
 
 # Streamlit app
@@ -159,6 +139,8 @@ def show_recommendations(state):
         for index, row in enumerate(refined_recommendations):
             with columns[index].container():
                 display_horizontal_song_box(row['title'], row['artist_name'])
+
+        
     else:
         st.warning("Select at least one song")
 
@@ -195,14 +177,6 @@ def show_recommendations(state):
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()  
         st.pyplot(plt)
-
-        if selected_songs:
-            explanations = explain_content_based_selection(selected_songs, refined_recommendations, tfidf_vectorizer)
-
-            # display recommendation
-            st.subheader("Explanation for refine recommendations:")
-            for explanation in explanations:
-               st.info(explanation)
             
     
         
