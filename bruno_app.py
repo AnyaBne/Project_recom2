@@ -6,7 +6,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Load your dataset
-df = pd.read_csv('song_dataset.csv')  # Replace with the path to your dataset
+df = pd.read_csv('data.csv')  # Replace with the path to your dataset
 
 # Configuration for collaborative filtering
 reader = Reader(rating_scale=(df['play_count'].min(), df['play_count'].max()))
