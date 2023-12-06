@@ -152,15 +152,19 @@ def show_recommendations(state):
             "for you, sorted from the highest predicted enjoyment to the lowest:"
         )
 
+        # Initialisation of titles and scores
+        titles = []
+        scores = []
+
         # Display initial recommendations and scores
         for (index, row), score in zip(enumerate(initial_recommendations.itertuples()), state["initial_scores"]):
             display_initial_recommendation_with_score(row.title, row.artist_name, user_id, score)
-            titles.append(row.title)
+            titles.append(row.title)  # add titles to the list
             scores.append(score)
 
        
         plt.figure(figsize=(10, 6))
-        plt.bar(titles, scores, color='skyblue')  # Utilisation des listes titles et scores
+        plt.bar(titles, score, color='skyblue')  # Utilisation des listes titles et scores
         plt.xlabel('Chansons')
         plt.ylabel('Scores de Prédiction')
         plt.title('Histogramme des Scores de Prédiction')
