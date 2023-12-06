@@ -94,7 +94,7 @@ def main():
     if st.button('Explanation of refine recommendation:'):
       explanations = explain_content_based_selection(selected_songs, final_recommendations_df, tfidf_vectorizer)        
       for explanation in explanations:
-      st.info(explanation)
+       st.info(explanation)
 
     # Step 5: Final Output
     final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
