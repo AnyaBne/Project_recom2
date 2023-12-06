@@ -155,6 +155,8 @@ def show_recommendations(state):
         # Display initial recommendations and scores
         for (index, row), score in zip(enumerate(initial_recommendations.itertuples()), state["initial_scores"]):
             display_initial_recommendation_with_score(row.title, row.artist_name, user_id, score)
+            titles.append(row.title)
+            scores.append(score)
         display_histogram(title, score)
         
     if st.button("Logout"):
