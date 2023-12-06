@@ -81,7 +81,7 @@ def main():
     st.subheader("Initial Recommendations")
     st.write(initial_recommendations)
 
-    if st.button('Explanation of this initial recommendation):
+    if st.button('Explanation of this initial recommendation:'):
       explain_recommendations(user_id)
 
     # Step 3: User Refines Recommendations
@@ -91,7 +91,7 @@ def main():
     
 
     
-    if st.button('Explanation of refine recommendation:):
+    if st.button('Explanation of refine recommendation:'):
       explanations = explain_content_based_selection(selected_songs, final_recommendations_df, tfidf_vectorizer)        
       for explanation in explanations:
       st.info(explanation)
