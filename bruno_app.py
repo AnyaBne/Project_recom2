@@ -157,7 +157,17 @@ def show_recommendations(state):
             display_initial_recommendation_with_score(row.title, row.artist_name, user_id, score)
             titles.append(row.title)
             scores.append(score)
-        display_histogram(title, score)
+
+       
+        plt.figure(figsize=(10, 6))
+        plt.bar(titles, scores, color='skyblue')  # Utilisation des listes titles et scores
+        plt.xlabel('Chansons')
+        plt.ylabel('Scores de Prédiction')
+        plt.title('Histogramme des Scores de Prédiction')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        st.pyplot(plt)
+    
         
     if st.button("Logout"):
         # Reset the state to go back to the login page
@@ -165,19 +175,7 @@ def show_recommendations(state):
         st.experimental_rerun()
 def display_initial_recommendation_with_score(title, artist_name, user_id, score):
     st.write(f"**Title:** {title}\n**Artist:** {artist_name}\n**Score:** {score:.2f}")
-def display_histogram(title, score):
-    # Création et affichage de l'histogramme
-    plt.figure(figsize=(10, 6))
-    plt.bar(title, score, color='skyblue')
-    plt.xlabel('Songs')
-    plt.ylabel('Scores')
-    plt.title('Graph')
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
-    st.pyplot(plt)
 
-    
-    st.pyplot(plt)
 def display_horizontal_song_box(title, artist_name):
     # Add your music icon URL or local path
     music_icon_url = "https://www.iconfinder.com/icons/5584525/download/png/512"
