@@ -25,12 +25,13 @@ def explain_recommendations(user_id, n=10):
 
     # Récupérer les scores de prédiction pour les chansons recommandées
     scores = []
-    song_titles = []
-    for index, row in recommended_songs.iterrows():
-        song_id = row['song']
+    song_titles = recommended_songs['title'].tolist()  # Liste des titres de chansons recommandées
+
+    for title in song_titles:
+        # Trouver l'ID de la chanson correspondant au titre (si nécessaire)
+        song_id = df[df['title'] == title]['song'].iloc[0]
         score = algo.predict(user_id, song_id).est
         scores.append(score)
-        song_titles.append(row['title'])
 
     # Création du graphique à barres
     plt.figure(figsize=(10, 6))
@@ -43,6 +44,7 @@ def explain_recommendations(user_id, n=10):
 
     # Affichage dans Streamlit
     st.pyplot(plt)
+
 def explain_content_based_selection(selected_songs, recommended_songs_df, tfidf_vectorizer):
     explanations = []
     df['combined_attributes2'] = 'title: ' + df['title'] + ' ' + 'release: ' + df['release'] + ' ' + 'artist name: ' + df['artist_name'] + ' ' + 'year: ' + df['year'].astype(str)
