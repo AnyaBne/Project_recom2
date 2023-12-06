@@ -155,6 +155,7 @@ def show_recommendations(state):
         # Display initial recommendations and scores
         for (index, row), score in zip(enumerate(initial_recommendations.itertuples()), state["initial_scores"]):
             display_initial_recommendation_with_score(row.title, row.artist_name, user_id, score)
+        display_histogram()
         
     if st.button("Logout"):
         # Reset the state to go back to the login page
@@ -162,14 +163,16 @@ def show_recommendations(state):
         st.experimental_rerun()
 def display_initial_recommendation_with_score(title, artist_name, user_id, score):
     st.write(f"**Title:** {title}\n**Artist:** {artist_name}\n**Score:** {score:.2f}")
-    # Visualization
+def display_histogram():
+    # Création et affichage de l'histogramme
     plt.figure(figsize=(10, 6))
-    plt.bar(title, score, color='skyblue')
-    plt.xlabel('Songs')
-    plt.ylabel('Scores')
-    plt.title('Explication des Recommandations : Partitions de Prédiction pour les Chansons Recommandées')
+    plt.bar(recommendations_data['titles'], recommendations_data['scores'], color='skyblue')
+    plt.xlabel('Chansons')
+    plt.ylabel('Scores de Prédiction')
+    plt.title('Histogramme des Scores de Prédiction')
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
+    st.pyplot(plt)
 
     
     st.pyplot(plt)
