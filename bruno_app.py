@@ -9,6 +9,8 @@ import requests
 from PIL import Image
 from io import BytesIO
 import matplotlib.pyplot as plt
+import numpy as np
+
 
 # Set Streamlit page configuration to wide mode
 st.set_page_config(layout="wide")
