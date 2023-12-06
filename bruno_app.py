@@ -166,7 +166,7 @@ def show_recommendations(state):
         plt.figure(figsize=(10, 6))
         plt.bar(titles, scores, color='skyblue') 
         plt.xlabel('Songs')
-        plt.ylabel('Scores de Prédiction')
+        plt.ylabel('Scores')
         plt.title('Histogram')
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()  
