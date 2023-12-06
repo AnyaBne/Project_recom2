@@ -4,7 +4,6 @@ from surprise import SVD, Dataset, Reader
 from surprise.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import matplotlib.pyplot as plt
 
 # Load your dataset
 df = pd.read_csv('song_dataset.csv')  # Replace with the path to your dataset
@@ -21,51 +20,6 @@ df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 
-def explain_recommendations(user_id, n=10):
-    # Obtenir les recommandations initiales
-    recommended_songs = get_initial_recommendations(user_id, n)
-
-    # Récupérer les scores de prédiction pour les chansons recommandées
-    scores = []
-    song_titles = recommended_songs['title'].tolist()  # Liste des titres de chansons recommandées
-
-    for title in song_titles:
-        # Trouver l'ID de la chanson correspondant au titre (si nécessaire)
-        song_id = df[df['title'] == title]['song'].iloc[0]
-        score = algo.predict(user_id, song_id).est
-        scores.append(score)
-
-    # Création du graphique à barres
-    plt.figure(figsize=(10, 6))
-    plt.bar(song_titles, scores, color='skyblue')
-    plt.xlabel('Chansons')
-    plt.ylabel('Scores de Prédiction')
-    plt.title('Explication des Recommandations : Scores de Prédiction pour les Chansons Recommandées')
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
-
-    # Affichage dans Streamlit
-    st.pyplot(plt)
-
-def explain_content_based_selection(selected_songs, recommended_songs_df, tfidf_vectorizer):
-    explanations = []
-    df['combined_attributes2'] = 'title: ' + df['title'] + ' ' + 'release: ' + df['release'] + ' ' + 'artist name: ' + df['artist_name'] + ' ' + 'year: ' + df['year'].astype(str)
-
-    for song in selected_songs:
-        selected_song_attributes = df[df['title'] == song]['combined_attributes2'].iloc[0]
-        explanation = f"Selected song '{song}' has these key attributes: {selected_song_attributes}."
-        explanations.append(explanation)
-
-    explanations.append("\nBased on these attributes, the following songs are recommended:")
-
-    for idx, rec_song in recommended_songs_df.iterrows():
-        rec_song_title = rec_song['title']
-        rec_song_attributes = df[df['title'] == rec_song_title]['combined_attributes'].iloc[0]
-        explanation = f"Recommended song '{rec_song_title}' has similar attributes: {rec_song_attributes}."
-        explanations.append(explanation)
-
-    return explanations
-
 # Streamlit app
 def main():
     st.title("Song Recommendation System")
@@ -81,14 +35,10 @@ def main():
     st.subheader("Initial Recommendations")
     st.write(initial_recommendations)
 
-    if st.button('Explanation of this initial recommendation:'):
-      explain_recommendations(user_id)
-
     # Step 3: User Refines Recommendations
     refined_recommendations = get_refined_recommendations(user_id)
     st.subheader("Refined Recommendations")
     st.write(refined_recommendations)
-    
 
     # Step 5: Final Output
     final_recommendations = get_final_recommendations(user_id, initial_recommendations, refined_recommendations)
