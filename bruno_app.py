@@ -170,6 +170,7 @@ def show_recommendations(state):
         plt.title('Histogramme des Scores de Prédiction')
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
+        plt.ylim(0, 10)  
         st.pyplot(plt)
     
         
