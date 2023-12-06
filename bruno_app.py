@@ -40,6 +40,23 @@ df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 
+# Explain function of the refine recommendation
+def generate_explanation(song_title, tfidf_vectorizer, tfidf_matrix):
+    # Extraction des attributs TF-IDF pour la chanson sélectionnée
+    selected_song_index = df[df['title'] == song_title].index[0]
+    selected_song_tfidf = tfidf_matrix[selected_song_index]
+
+    # Obtention des mots-clés en fonction de leur score TF-IDF
+    feature_array = np.array(tfidf_vectorizer.get_feature_names_out())
+    tfidf_sorting = np.argsort(selected_song_tfidf.toarray()).flatten()[::-1]
+
+    # Prendre les 5 meilleurs attributs
+    top_keywords = feature_array[tfidf_sorting][:5]
+
+    # Générer une explication textuelle
+    explanation = f"Cette chanson est recommandée en raison de ses caractéristiques distinctives telles que {', '.join(top_keywords[:-1])}, et {top_keywords[-1]}."
+    return explanation
+
 
 # Streamlit app
 def main():
@@ -128,6 +145,13 @@ def show_recommendations(state):
         # Step 4: Generate Refined Recommendations
         refined_recommendations = generate_content_based_recommendations(selected_songs, user_id, n=10)
 
+        # generate explication for each recommendation
+        explanations = {}
+        for song in refined_recommendations:
+        song_title = song['title']
+        explanation = generate_explanation(song_title, tfidf_vectorizer, tfidf_matrix)
+        explanations[song_title] = explanation
+
         # Display final recommendations outside the "About" section
         st.subheader("Final Recommendations")
         columns = st.columns(len(refined_recommendations))
@@ -161,6 +185,7 @@ def show_recommendations(state):
             display_initial_recommendation_with_score(row.title, row.artist_name, user_id, score)
             titles.append(row.title)  # add titles to the list
             scores.append(score)
+            
 
        
         plt.figure(figsize=(10, 6))
@@ -171,6 +196,13 @@ def show_recommendations(state):
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()  
         st.pyplot(plt)
+
+        if selected_songs:
+            st.subheader("Explications des Recommandations")
+            for title, explanation in explanations.items():
+               st.write(f"Titre: {title}")
+               st.text(explanation)
+            
     
         
     if st.button("Logout"):
