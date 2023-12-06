@@ -19,29 +19,30 @@ algo.fit(trainset)
 df['combined_attributes'] = df['title'] + ' ' + df['release'] + ' ' + df['artist_name'] + ' ' + df['year'].astype(str)
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
-def generate_explanations(recommended_songs, user_id):
-    explanations = ["Detailed explanations for your recommendations:\n The songs are recommended based on listening preferences of users with similar tastes as yours. \n"]
+def explain_recommendations(user_id, n=10):
+    # Obtenir les recommandations initiales
+    recommended_songs = get_initial_recommendations(user_id, n)
+
+    # Récupérer les scores de prédiction pour les chansons recommandées
+    scores = []
+    song_titles = []
     for index, row in recommended_songs.iterrows():
-        # Utiliser 'title' comme identifiant de la chanson si 'song' n'est pas disponible
-        song_id = row.get('song', row['title'])
-        artist = row['artist_name']
-        score = algo.predict(user_id, song_id).est  # Get the prediction score for the song
+        song_id = row['song']
+        score = algo.predict(user_id, song_id).est
+        scores.append(score)
+        song_titles.append(row['title'])
 
-        # Trouver le nombre d'utilisateurs similaires qui ont aimé cette chanson
-        similar_users = find_similar_users(user_id)
-        similar_users_who_liked_song = df[(df['user'].isin(similar_users)) & (df['song'] == song_id)]['user'].nunique()
+    # Création du graphique à barres
+    plt.figure(figsize=(10, 6))
+    plt.bar(song_titles, scores, color='skyblue')
+    plt.xlabel('Chansons')
+    plt.ylabel('Scores de Prédiction')
+    plt.title('Explication des Recommandations : Scores de Prédiction pour les Chansons Recommandées')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
 
-        explanation = f"'{row['title']}' by {artist} is recommended with a score of {score:.2f}. " \
-                       f"It is liked by {similar_users_who_liked_song} users with similar tastes as yours."
-        explanations.append(explanation)
-    return '\n'.join(explanations)
-
-def find_similar_users(user_id):
-    # Implémenter la logique pour trouver des utilisateurs aux préférences similaires
-    # Ceci est un emplacement pour votre logique réelle pour trouver des utilisateurs similaires
-    listened_songs = df[df['user'] == user_id]['song'].unique()
-    return df[df['song'].isin(listened_songs)]['user'].unique()
-
+    # Affichage dans Streamlit
+    st.pyplot(plt)
 def explain_content_based_selection(selected_songs, recommended_songs_df, tfidf_vectorizer):
     explanations = []
     df['combined_attributes2'] = 'title: ' + df['title'] + ' ' + 'release: ' + df['release'] + ' ' + 'artist name: ' + df['artist_name'] + ' ' + 'year: ' + df['year'].astype(str)
@@ -79,9 +80,8 @@ def main():
         initial_recommendations = get_initial_recommendations(user_id)
         initial_recommendations_container.subheader("Initial Recommendations")
         initial_recommendations_container.write(initial_recommendations)
-        explanations = generate_explanations(initial_recommendations, user_id)
-        st.text("Why these songs are recommended:")
-        st.info(explanations)
+        
+        explain_recommendations(user_id)
 
 
 
