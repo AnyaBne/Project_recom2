@@ -43,8 +43,9 @@ tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_attributes'])
 
 # Explain function of the refine recommendation
-def explain_content_based_selection(selected_songs, recommended_songs_df, df):
+def explain_content_based_selection(selected_songs, recommended_songs_df, tfidf_vectorizer):
     explanations = []
+    df['combined_attributes2'] = 'title: ' + df['title'] + ' ' + 'release: ' + df['release'] + ' ' + 'artist name: ' + df['artist_name'] + ' ' + 'year: ' + df['year'].astype(str)
 
     for song in selected_songs:
         selected_song_attributes = df[df['title'] == song]['combined_attributes2'].iloc[0]
@@ -55,7 +56,7 @@ def explain_content_based_selection(selected_songs, recommended_songs_df, df):
 
     for idx, rec_song in recommended_songs_df.iterrows():
         rec_song_title = rec_song['title']
-        rec_song_attributes = df[df['title'] == rec_song_title]['combined_attributes2'].iloc[0]
+        rec_song_attributes = df[df['title'] == rec_song_title]['combined_attributes'].iloc[0]
         explanation = f"Recommended song '{rec_song_title}' has similar attributes: {rec_song_attributes}."
         explanations.append(explanation)
 
