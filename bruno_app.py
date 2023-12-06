@@ -148,9 +148,9 @@ def show_recommendations(state):
         # generate explication for each recommendation
         explanations = {}
         for song in refined_recommendations:
-        song_title = song['title']
-        explanation = generate_explanation(song_title, tfidf_vectorizer, tfidf_matrix)
-        explanations[song_title] = explanation
+          song_title = song['title']
+          explanation = generate_explanation(song_title, tfidf_vectorizer, tfidf_matrix)
+          explanations[song_title] = explanation
 
         # Display final recommendations outside the "About" section
         st.subheader("Final Recommendations")
